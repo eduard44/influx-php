@@ -155,7 +155,7 @@ class Database extends BaseHttp
      */
     public function first($sql)
     {
-        return current($this->query($sql));
+        return $this->query($sql)->current();
     }
 
     /**
