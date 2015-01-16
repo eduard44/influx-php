@@ -43,9 +43,10 @@ class BaseHTTP
     protected $port;
     protected $user;
     protected $pass;
+    protected $https;
     protected $base;
     protected $timePrecision = 's';
-    protected $children = array();
+    protected $children = [];
 
     const SECOND        = 's';
     const MILLISECOND   = 'm';
@@ -60,14 +61,20 @@ class BaseHTTP
         $this->pass   = $c->pass;
         $this->port   = $c->port;
         $this->host   = $c->host;
+        $this->https  = $c->https;
         $this->timePrecision = $c->timePrecision;
         $c->children[] = $this;
     }
 
-    protected function getCurl($url, array $args = array())
+    protected function getCurl($url, array $args = [])
     {
-        $args = array_merge($args, array('u' => $this->user, 'p' => $this->pass));
+        $args = array_merge($args, ['u' => $this->user, 'p' => $this->pass]);
+
         $url  = "http://{$this->host}:{$this->port}/{$this->base}{$url}";
+        if ($this->https) {
+            $url = "https://{$this->host}:{$this->port}/{$this->base}{$url}";
+        }
+
         $url .= "?" . http_build_query($args);
         $ch   = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
@@ -89,9 +96,9 @@ class BaseHTTP
     protected function delete($url)
     {
         $ch = $this->getCurl($url);
-        curl_setopt_array($ch, array(
+        curl_setopt_array($ch, [
             CURLOPT_CUSTOMREQUEST => "DELETE",
-        ));
+        ]);
 
         return $this->execCurl($ch);
     }
@@ -119,19 +126,19 @@ class BaseHTTP
         throw new \InvalidArgumentException("Expecting s, m or u as time precision");
     }
 
-    protected function get($url, array $args = array())
+    protected function get($url, array $args = [])
     {
         $ch = $this->getCurl($url, $args);
         return $this->execCurl($ch, true);
     }
 
-    protected function post($url, array $body, array $args = array())
+    protected function post($url, array $body, array $args = [])
     {
         $ch = $this->getCurl($url, $args);
-        curl_setopt_array($ch, array(
+        curl_setopt_array($ch, [
             CURLOPT_POST =>  1,
             CURLOPT_POSTFIELDS => json_encode($body),
-        ));
+        ]);
 
         return $this->execCurl($ch);
     }
