@@ -35,21 +35,111 @@
   +---------------------------------------------------------------------------------+
 */
 
-namespace crodas\InfluxPHP;
+/**
+ * InfluxDB PHP Client
+ *
+ * Modified fork of https://github.com/crodas/InfluxPHP
+ *
+ * @author Eduardo Trujillo <ed@chromabits.com>
+ */
 
-use ArrayIterator;
+namespace Chromabits\InfluxClient;
 
-class Cursor extends ArrayIterator
+/**
+ * Class Client
+ *
+ * An InfluxDb client
+ *
+ * @package Chromabits\InfluxClient
+ */
+class Client extends BaseHttp
 {
-    public function __construct(array $resultset)
+    /**
+     * Construct an instance of a Client
+     *
+     * @param string $host
+     * @param int $port
+     * @param string $user
+     * @param string $pass
+     * @param bool $https
+     */
+    public function __construct($host = "localhost", $port = 8086, $user = 'root', $pass = 'root', $https = false)
     {
-        $rows = array();
-        foreach ($resultset as $set) {
-            foreach ($set['points'] as $row) {
-                $row    = (object)array_combine($set['columns'], $row);
-                $rows[] = $row;
-            }
+        parent::__construct();
+
+        $this->host = $host;
+        $this->port = $port;
+        $this->user = $user;
+        $this->pass = $pass;
+
+        if ($https) {
+            $this->protocol = 'https';
         }
-        parent::__construct($rows);
+
+        $this->setupClient();
+    }
+
+    /**
+     * Delete a database from this server
+     *
+     * @param $name
+     *
+     * @return \GuzzleHttp\Message\ResponseInterface|mixed|null
+     */
+    public function deleteDatabase($name)
+    {
+        return $this->delete("db/$name");
+    }
+
+    /**
+     * Create a new database
+     *
+     * @param $name
+     *
+     * @return \Chromabits\InfluxClient\Database
+     */
+    public function createDatabase($name)
+    {
+        $this->post('db', ['name' => $name]);
+
+        return new Database($this, $name);
+    }
+
+    /**
+     * Get all databases in this server
+     *
+     * @return Database[]
+     */
+    public function getDatabases()
+    {
+        $self = $this;
+
+        return array_map(function ($obj) use ($self) {
+            return new Database($self, $obj['name']);
+        }, $this->get('db')->json());
+    }
+
+    /**
+     * Get a wrapper for a database
+     *
+     * @param $name
+     *
+     * @return \Chromabits\InfluxClient\Database
+     */
+    public function getDatabase($name)
+    {
+        return new Database($this, $name);
+    }
+
+    /**
+     * Magic method for accessing Database objects as properties
+     *
+     * @param $name
+     *
+     * @return \Chromabits\InfluxClient\Database
+     */
+    public function __get($name)
+    {
+        return new Database($this, $name);
     }
 }

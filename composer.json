@@ -1,16 +1,32 @@
 {
-    "name": "crodas/influx-php",
+    "name": "chromabits/influx-php",
     "description": "Simple client for InfluxDB",
     "license": "BSD-4-Clause",
-    "version": "v0.1.1",
     "authors": [
         {
             "name": "César D. Rodas",
             "email": "crodas@php.net"
+        },
+        {
+            "name": "Eduardo Trujillo",
+            "email": "ed@chromabits.com"
         }
     ],
     "minimum-stability": "dev",
     "autoload": {
-        "classmap":["lib/"]
+        "psr-4": {
+            "Chromabits\\InfluxClient\\": "src/Chromabits/InfluxClient"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\Chromabits\\InfluxClient\\": "tests/Chromabits/InfluxClient"
+        }
+    },
+    "require": {
+        "guzzlehttp/guzzle": "~5.0@dev"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.6@dev"
     }
 }

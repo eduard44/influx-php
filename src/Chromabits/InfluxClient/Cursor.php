@@ -35,58 +35,42 @@
   +---------------------------------------------------------------------------------+
 */
 
-namespace crodas\InfluxPHP;
+/**
+ * InfluxDB PHP Client
+ *
+ * Modified fork of https://github.com/crodas/InfluxPHP
+ *
+ * @author Eduardo Trujillo <ed@chromabits.com>
+ */
 
-class DB extends BaseHTTP
+namespace Chromabits\InfluxClient;
+
+use ArrayIterator;
+
+/**
+ * Class Cursor
+ *
+ * @package Chromabits\InfluxClient
+ */
+class Cursor extends ArrayIterator
 {
-    protected $client;
-    protected $name;
-
-    public function __construct(Client $client, $name)
+    /**
+     * Construct an instance of a Cursor
+     *
+     * @param array $resultSet
+     */
+    public function __construct(array $resultSet)
     {
-        $this->client = $client;
-        $this->name   = $name;
-        $this->inherits($client);
-        $this->base   = "db/$name/";
-    }
+        $rows = [];
 
-    public function getName()
-    {
-        return $this->name;
-    }
+        foreach ($resultSet as $set) {
+            foreach ($set['points'] as $row) {
+                $row = (object)array_combine($set['columns'], $row);
 
-    public function drop()
-    {
-        return $this->client->deleteDatabase($this->name);
-    }
-
-    public function insert($name, array $data)
-    {
-        $points = array();
-        $first  = current($data);
-        if (!is_array($first)) {
-            return $this->insert($name, array($data));
+                $rows[] = $row;
+            }
         }
-        $columns = array_keys($first);
-        foreach ($data as $value) {
-            $points[] = array_values($value);
-        }
-        $body = compact('name', 'columns', 'points');
-        return $this->post('series', array($body), array('time_precision' => $this->timePrecision));
-    }
 
-    public function first($sql)
-    {
-        return current($this->query($sql));
-    }
-
-    public function query($sql)
-    {
-        return new Cursor($this->get('series', array('q' => $sql, 'time_precision' => $this->timePrecision)));
-    }
-
-    public function createUser($name, $password)
-    {
-        return $this->post('users', compact('name', 'password'));
+        parent::__construct($rows);
     }
 }

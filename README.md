@@ -1,24 +1,26 @@
-InfluxDB [![Build Status](https://travis-ci.org/crodas/InfluxPHP.png?branch=master)](https://travis-ci.org/crodas/InfluxPHP)
+influx-php [![Build Status](https://travis-ci.org/eduard44/influx-php.png?branch=master)](https://travis-ci.org/eduard44/influx-php)
 ========
 
-Simple PHP client for [InfluxDB](http://influxdb.org/), an open-source, distributed, time series, events, and metrics database with no external dependencies.
+Simple PHP client for [InfluxDB](http://influxdb.org/), an open-source, distributed, time series, events, and metrics database.
 
-How to install it
------------------
+This is a fork of `crodas/InfluxPHP`
+
+## Installation
 
 The easiest way is to install it via [composer](http://getcomposer.org)
 
 ```bash
-composer require crodas/influx-php:\*
+composer require chromabits/influx-php
 ```
 
-How to use it
--------------
+## Usage
 
 You need to create a client object.
 
 ```php
-$client = new \crodas\InfluxPHP\Client(
+use Chromabits\InfluxClient\Client;
+
+$client = new Client(
    "localhost" /*default*/,
    8086 /* default */,
    "root" /* by default */,
